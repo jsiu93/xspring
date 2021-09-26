@@ -18,10 +18,10 @@ public class ApiTest {
 
         beanFactory.registerBeanDefinition("userService", beanDefinition);
 
-        UserService userService = (UserService) beanFactory.getBean("userService");
+        UserService userService = (UserService) beanFactory.getBean("userService", "xxx");
         userService.queryUserInfo();
 
-        UserService userService_singleton = (UserService) beanFactory.getBean("userService");
-        userService_singleton.queryUserInfo();
+//        UserService userService_singleton = (UserService) beanFactory.getBean("userService");
+//        userService_singleton.queryUserInfo();
     }
 }
