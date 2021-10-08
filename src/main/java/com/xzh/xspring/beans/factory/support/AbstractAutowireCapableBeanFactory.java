@@ -1,11 +1,15 @@
 package com.xzh.xspring.beans.factory.support;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.xzh.xspring.beans.BeanException;
+import com.xzh.xspring.beans.PropertyValue;
+import com.xzh.xspring.beans.PropertyValues;
 import com.xzh.xspring.beans.factory.config.BeanDefinition;
+import com.xzh.xspring.beans.factory.config.BeanReference;
 
 import java.lang.reflect.Constructor;
 
-public abstract class AbstractAutowireCapableBeanFactory extends  AbstractBeanFactory{
+public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFactory {
 
     private InstantiationStrategy instantiationStrategy = new CglibSubclassingInstantiationStrategy();
 
@@ -14,11 +18,33 @@ public abstract class AbstractAutowireCapableBeanFactory extends  AbstractBeanFa
         Object bean = null;
         try {
             bean = createBeanInstance(beanDefinition, beanName, args);
+            applyPropertyValues(beanName, bean, beanDefinition);
         } catch (Exception exception) {
             throw new BeanException("Instantiation of bean failed", exception);
         }
         addSingleton(beanName, bean);
         return bean;
+    }
+
+    private void applyPropertyValues(String beanName, Object bean, BeanDefinition beanDefinition) throws BeanException {
+        try {
+            PropertyValues propertyValues = beanDefinition.getPropertyValues();
+            for (PropertyValue propertyValue : propertyValues.getPropertyValues()) {
+                String name = propertyValue.getName();
+                Object value = propertyValue.getValue();
+
+                if (value instanceof BeanReference) {
+                    BeanReference beanReference = (BeanReference) value;
+
+                    value = getBean(beanReference.getBeanName());
+                }
+
+                BeanUtil.setFieldValue(bean, name, value);
+            }
+        } catch (Exception e) {
+            throw new BeanException("Error setting property values: " + beanName);
+        }
+
     }
 
 
